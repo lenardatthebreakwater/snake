@@ -5,6 +5,7 @@ int main(void) {
 	int screenHeight = 700;
 	int playerSpeedX = 0;
 	int playerSpeedY = 0;
+	char direction;
 
 	InitWindow(screenWidth, screenHeight, "Snake");
 	SetTargetFPS(60);
@@ -19,20 +20,25 @@ int main(void) {
 	while (!WindowShouldClose()) {
 		player.x += playerSpeedX;
 		player.y += playerSpeedY;
-		if (IsKeyPressed(KEY_RIGHT)) {
+		if (IsKeyPressed(KEY_RIGHT) && direction != 'l') {
 			playerSpeedX = 3;
+			playerSpeedY = 0;
+			direction = 'r';
 		}
-		if (IsKeyPressed(KEY_UP)) {
+		if (IsKeyPressed(KEY_UP) && direction != 'd') {
 			playerSpeedX = 0;
 			playerSpeedY = -3;
+			direction = 'u';
 		}
-		if (IsKeyPressed(KEY_LEFT)) {
+		if (IsKeyPressed(KEY_LEFT) && direction != 'r') {
 			playerSpeedX = -3;
 			playerSpeedY = 0;
+			direction = 'l';
 		}
-		if (IsKeyPressed(KEY_DOWN)) {
+		if (IsKeyPressed(KEY_DOWN) && direction != 'u') {
 			playerSpeedX = 0;
 			playerSpeedY = 3;
+			direction = 'd';
 		}
 
 		BeginDrawing();
