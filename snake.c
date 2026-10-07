@@ -14,8 +14,7 @@ typedef struct Node {
 typedef struct LinkedList {
 	Node* head;
 	Node* last_node;
-	int width;
-	int height;
+	int chunk_side_length;
 	int speed_x;
 	int speed_y;
 	int length;
@@ -37,8 +36,7 @@ int main(void) {
 	LinkedList snake = {
 		.head = NULL,
 		.last_node = NULL,
-		.width = 40,
-		.height = 40,
+		.chunk_side_length = 40,
 		.speed_x = 0,
 		.speed_y = 0,
 		.length = 0
@@ -85,7 +83,7 @@ int main(void) {
 
 void addNode(LinkedList* linked_list) {
 	Node* new_node = malloc(sizeof(Node));
-	new_node->x = ((SCREENWIDTH / 2) - (40 / 2)) - (40 * linked_list->length);
+	new_node->x = ((SCREENWIDTH / 2) - (linked_list->chunk_side_length / 2)) - (linked_list->chunk_side_length * linked_list->length);
 	new_node->y = (SCREENHEIGHT / 2) - (40 / 2);
 	new_node->next = NULL;
 	
@@ -119,7 +117,7 @@ void drawSnake(LinkedList* snake) {
 	Node* current_node = snake->head;
 
 	while (current_node != NULL) {
-		DrawRectangle(current_node->x, current_node->y, snake->width, snake->height, RAYWHITE);
+		DrawRectangle(current_node->x, current_node->y, snake->chunk_side_length, snake->chunk_side_length, RAYWHITE);
 		current_node = current_node->next;
 	}
 }
