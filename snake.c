@@ -4,64 +4,75 @@
 
 #define SCREENWIDTH 1000
 #define SCREENHEIGHT 700
-#define SNAKECHUNKWIDTH 40
-#define SNAKECHUNKHEIGHT 40
-
-typedef struct SnakeChunk {
-	int x;
-	int y;
-} SnakeChunk;
 
 typedef struct Node {
-	SnakeChunk* data;
+	int x;
+	int y;
 	struct Node* next;
 } Node;
 
 typedef struct LinkedList {
-	struct Node* head;
+	Node* head;
+	Node* last_node;
+	int width;
+	int height;
+	int speed_x;
+	int speed_y;
 	int length;
-	int speedX;
-	int speedY;
+
 } LinkedList;
 
-void addNode(LinkedList* linkedlist);
+void addNode(LinkedList* linked_list);
 
-void freeLinkedList(LinkedList* linkedlist);
+void freeLinkedList(LinkedList* linked_list);
 
-void printLinkedList(LinkedList* linkedlist);
+void printLinkedList(LinkedList* linked_list);
 
-void drawSnake(LinkedList* linkedlist);
-
-void changeSnakeDirectionWhenKeyPressed(LinkedList* snake);
+void drawSnake(LinkedList* linked_list);
 
 int main(void) {
-	int screenWidth = SCREENWIDTH;
-	int screenHeight = SCREENHEIGHT; 
-
-	InitWindow(screenWidth, screenHeight, "Snake");
+	InitWindow(SCREENWIDTH, SCREENHEIGHT, "Snake");
 	SetTargetFPS(60);
 	
 	LinkedList snake = {
 		.head = NULL,
-		.length = 0,
-		.speedX = 0,
-		.speedY = 0
+		.last_node = NULL,
+		.width = 40,
+		.height = 40,
+		.speed_x = 0,
+		.speed_y = 0,
+		.length = 0
 	};
-	addNode(&snake);
+	
 	addNode(&snake);
 	addNode(&snake);
 	printLinkedList(&snake);
 	
 	while (!WindowShouldClose()) {
-		Node* currentnode = snake.head;
-		while (currentnode != NULL) {
-			currentnode->data->x += snake.speedX;
-			currentnode->data->y += snake.speedY;
-			currentnode = currentnode->next;
+		Node* current_node = snake.head;
+		while (current_node != NULL) {
+			current_node->x += snake.speed_x;
+			current_node->y += snake.speed_y;
+			current_node = current_node->next;
 		}
 
-		changeSnakeDirectionWhenKeyPressed(&snake);
-		
+		if (IsKeyPressed(KEY_RIGHT)) {
+			snake.speed_x = 3;
+			snake.speed_y = 0;
+		}
+		if (IsKeyPressed(KEY_UP)) {
+			snake.speed_x = 0;
+			snake.speed_y = -3;
+		}
+		if (IsKeyPressed(KEY_LEFT)) {
+			snake.speed_x = -3;
+			snake.speed_y = 0;
+		}
+		if (IsKeyPressed(KEY_DOWN)) {
+			snake.speed_x = 0;
+			snake.speed_y = 3;
+		}
+
 		BeginDrawing();
 		ClearBackground(BLACK);
 		drawSnake(&snake);
@@ -72,63 +83,45 @@ int main(void) {
 	return 0;
 }
 
-void addNode(LinkedList* linkedlist) {
-	SnakeChunk* snakechunk = malloc(sizeof(SnakeChunk));
-	snakechunk->x = ((SCREENWIDTH / 2) - (SNAKECHUNKWIDTH / 2)) - (SNAKECHUNKWIDTH * linkedlist->length);
-	snakechunk->y = (SCREENHEIGHT / 2) - (SNAKECHUNKHEIGHT / 2);
+void addNode(LinkedList* linked_list) {
+	Node* new_node = malloc(sizeof(Node));
+	new_node->x = ((SCREENWIDTH / 2) - (40 / 2)) - (40 * linked_list->length);
+	new_node->y = (SCREENHEIGHT / 2) - (40 / 2);
+	new_node->next = NULL;
+	
+	if (linked_list->head == NULL) {
+		linked_list->head = new_node;
+		linked_list->length++;
+		linked_list->last_node = new_node;
+		return;
+	}
 
-	Node* newnode = malloc(sizeof(Node));
-	newnode->data = snakechunk;
-
-	newnode->next = linkedlist->head;
-	linkedlist->head = newnode;
-	linkedlist->length++;
+	linked_list->last_node->next = new_node;
+	linked_list->length++;
+	linked_list->last_node = new_node;
 }
 
-void printLinkedList(LinkedList* linkedlist) {
-	if (linkedlist->head == NULL) {
+void printLinkedList(LinkedList* linked_list) {
+	if (linked_list->head == NULL) {
 		printf("Empty");
 		return;
 	}
 
-	Node* currentnode = linkedlist->head;
+	Node* current_node = linked_list->head;
 
-	while (currentnode != NULL) {
-		printf("SnakeChunk{x: %d, y: %d} -> ", currentnode->data->x, currentnode->data->y);
-		currentnode = currentnode->next;
+	while (current_node != NULL) {
+		printf("Node {x: %d, y: %d} -> ", current_node->x, current_node->y);
+		current_node = current_node->next;
 	}
 }
 
 void drawSnake(LinkedList* snake) {
-	Node* currentnode = snake->head;
+	Node* current_node = snake->head;
 
-	while (currentnode != NULL) {
-		DrawRectangle(currentnode->data->x, currentnode->data->y, SNAKECHUNKWIDTH, SNAKECHUNKHEIGHT, RAYWHITE);
-		currentnode = currentnode->next;
+	while (current_node != NULL) {
+		DrawRectangle(current_node->x, current_node->y, snake->width, snake->height, RAYWHITE);
+		current_node = current_node->next;
 	}
 }
 
-void changeSnakeDirectionWhenKeyPressed(LinkedList* snake) {
-	Node* currentnode = snake->head;
-	
-	while (currentnode != NULL) {
-		if (IsKeyPressed(KEY_RIGHT)) {
-			snake->speedX = 3;
-			snake->speedY = 0;
-		}
-		if (IsKeyPressed(KEY_UP)) {
-			snake->speedX = 0;
-			snake->speedY = -3;
-		}
-		if (IsKeyPressed(KEY_LEFT)) {
-			snake->speedX = -3;
-			snake->speedY = 0;
-		}
-		if (IsKeyPressed(KEY_DOWN)) {
-			snake->speedX = 0;
-			snake->speedY = 3;
-		}
-		currentnode = currentnode->next;
-	}
-}
 
