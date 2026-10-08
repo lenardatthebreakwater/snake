@@ -44,55 +44,41 @@ int main(void) {
 	
 	addNode(&snake);
 	addNode(&snake);
-	addNode(&snake);
-	addNode(&snake);
 	printLinkedList(&snake);
 	
-	int frame_count = 0;
-
 	while (!WindowShouldClose()) {
+		int prev_x = snake.head->x;
+		int prev_y = snake.head->y;
+
+		Node* current_node = snake.head;
+		while (current_node != NULL) {
+			int temp_x = current_node->x;
+			int temp_y = current_node->y;
+
+			current_node->x += prev_x;
+			current_node->y += prev_y;
+
+			current_node->next->x = temp_x;
+			current_node->next->y = temp_y;
+
+			current_node = current_node->next;
+		}
+
 		if (IsKeyPressed(KEY_RIGHT)) {
-			snake.speed_x = snake.chunk_side_length;
+			snake.speed_x = 3;
 			snake.speed_y = 0;
 		}
 		if (IsKeyPressed(KEY_UP)) {
 			snake.speed_x = 0;
-			snake.speed_y = -(snake.chunk_side_length);
+			snake.speed_y = -3;
 		}
 		if (IsKeyPressed(KEY_LEFT)) {
-			snake.speed_x = -(snake.chunk_side_length);
+			snake.speed_x = -3;
 			snake.speed_y = 0;
 		}
 		if (IsKeyPressed(KEY_DOWN)) {
 			snake.speed_x = 0;
-			snake.speed_y = snake.chunk_side_length;
-		}
-
-
-		frame_count++;
-		
-		if (frame_count == 10) {
-			frame_count = 0;
-			
-			int prev_x = snake.head->x;
-			int prev_y = snake.head->y;
-
-			snake.head->x += snake.speed_x;
-			snake.head->y += snake.speed_y;
-			
-			Node* current_node = snake.head->next;
-			while (current_node != NULL) {
-				int temp_x = current_node->x;
-				int temp_y = current_node->y;
-
-				current_node->x = prev_x;
-				current_node->y = prev_y;
-
-				prev_x = temp_x;
-				prev_y = temp_y;
-
-				current_node = current_node->next;
-			}
+			snake.speed_y = 3;
 		}
 
 		BeginDrawing();
@@ -107,7 +93,7 @@ int main(void) {
 
 void addNode(LinkedList* linked_list) {
 	Node* new_node = malloc(sizeof(Node));
-	new_node->x = ((SCREENWIDTH / 2) - (linked_list->chunk_side_length / 2));
+	new_node->x = ((SCREENWIDTH / 2) - (linked_list->chunk_side_length / 2)) - (linked_list->chunk_side_length * linked_list->length);
 	new_node->y = (SCREENHEIGHT / 2) - (40 / 2);
 	new_node->next = NULL;
 	
