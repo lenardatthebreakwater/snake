@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #define SCREENWIDTH 1000
-#define SCREENHEIGHT 700
+#define SCREENHEIGHT 800
 
 typedef struct Node {
 	int x;
@@ -17,6 +17,7 @@ typedef struct LinkedList {
 	int chunk_side_length;
 	int speed_x;
 	int speed_y;
+	char direction;
 	int length;
 
 } LinkedList;
@@ -39,33 +40,40 @@ int main(void) {
 		.chunk_side_length = 40,
 		.speed_x = 0,
 		.speed_y = 0,
+		.direction = 0,
 		.length = 0
 	};
 	
 	addNode(&snake);
-	addNode(&snake);
-	addNode(&snake);
-	addNode(&snake);
-	printLinkedList(&snake);
 	
+	Node food = {
+		.x = GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length)),
+		.y = GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length)),
+		.next = NULL,
+	};
+
 	int frame_count = 0;
 
 	while (!WindowShouldClose()) {
-		if (IsKeyPressed(KEY_RIGHT)) {
+		if (IsKeyPressed(KEY_RIGHT) && snake.direction != 'l') {
 			snake.speed_x = snake.chunk_side_length;
 			snake.speed_y = 0;
+			snake.direction = 'r';
 		}
-		if (IsKeyPressed(KEY_UP)) {
+		if (IsKeyPressed(KEY_UP) && snake.direction != 'd') {
 			snake.speed_x = 0;
 			snake.speed_y = -(snake.chunk_side_length);
+			snake.direction = 'u';
 		}
-		if (IsKeyPressed(KEY_LEFT)) {
+		if (IsKeyPressed(KEY_LEFT) && snake.direction != 'r') {
 			snake.speed_x = -(snake.chunk_side_length);
 			snake.speed_y = 0;
+			snake.direction = 'l';
 		}
-		if (IsKeyPressed(KEY_DOWN)) {
+		if (IsKeyPressed(KEY_DOWN) && snake.direction != 'u') {
 			snake.speed_x = 0;
 			snake.speed_y = snake.chunk_side_length;
+			snake.direction = 'd';
 		}
 
 
@@ -97,6 +105,7 @@ int main(void) {
 
 		BeginDrawing();
 		ClearBackground(BLACK);
+		DrawRectangle(food.x, food.y, snake.chunk_side_length, snake.chunk_side_length, RAYWHITE);
 		drawSnake(&snake);
 		EndDrawing();
 	}
