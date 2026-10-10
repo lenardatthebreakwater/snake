@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define SCREENWIDTH 1000
+#define SCREENWIDTH 1200
 #define SCREENHEIGHT 800
 
 typedef struct Node {
@@ -17,12 +17,11 @@ typedef struct LinkedList {
 	int chunk_side_length;
 	int speed_x;
 	int speed_y;
-	char direction;
 	int length;
 
 } LinkedList;
 
-void addNode(LinkedList* linked_list);
+void addSnakeChunk(LinkedList* snake);
 
 void freeLinkedList(LinkedList* linked_list);
 
@@ -40,40 +39,77 @@ int main(void) {
 		.chunk_side_length = 40,
 		.speed_x = 0,
 		.speed_y = 0,
-		.direction = 0,
 		.length = 0
 	};
 	
-	addNode(&snake);
+	Node snake_head = {
+		.x = snake.chunk_side_length * 3,
+		.y = snake.chunk_side_length * 3,
+		.next = NULL
+	};
+
+	snake.head = &snake_head;
+	snake.last_node = &snake_head;
 	
+	int x =  GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
+	while (x % snake.chunk_side_length != 0) {
+		x = GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
+	}
+	int y =  GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
+	while (y % snake.chunk_side_length != 0) {
+			y = GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
+	}
 	Node food = {
-		.x = GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length)),
-		.y = GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length)),
+		.x = x,
+		.y = y,
 		.next = NULL,
 	};
 
 	int frame_count = 0;
 
 	while (!WindowShouldClose()) {
-		if (IsKeyPressed(KEY_RIGHT) && snake.direction != 'l') {
+		if (IsKeyPressed(KEY_RIGHT)) {
 			snake.speed_x = snake.chunk_side_length;
 			snake.speed_y = 0;
-			snake.direction = 'r';
 		}
-		if (IsKeyPressed(KEY_UP) && snake.direction != 'd') {
+		if (IsKeyPressed(KEY_UP)) {
 			snake.speed_x = 0;
 			snake.speed_y = -(snake.chunk_side_length);
-			snake.direction = 'u';
 		}
-		if (IsKeyPressed(KEY_LEFT) && snake.direction != 'r') {
+		if (IsKeyPressed(KEY_LEFT)) {
 			snake.speed_x = -(snake.chunk_side_length);
 			snake.speed_y = 0;
-			snake.direction = 'l';
 		}
-		if (IsKeyPressed(KEY_DOWN) && snake.direction != 'u') {
+		if (IsKeyPressed(KEY_DOWN)) {
 			snake.speed_x = 0;
 			snake.speed_y = snake.chunk_side_length;
-			snake.direction = 'd';
+		}
+		
+		Rectangle snake_head_rec = {
+			.x=(float)snake_head.x,
+			.y=(float)snake_head.y,
+			.width=(float)snake.chunk_side_length,
+			.height=(float)snake.chunk_side_length
+		};
+
+		Rectangle food_rec = {
+			.x=(float)food.x,
+			.y=(float)food.y,
+			.width=(float)snake.chunk_side_length,
+			.height=(float)snake.chunk_side_length
+		};
+
+		if (CheckCollisionRecs(snake_head_rec, food_rec)) {
+			addSnakeChunk(&snake);
+
+			food.x =  GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
+			while (food.x % snake.chunk_side_length != 0) {
+				food.x = GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
+			}
+			food.y =  GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
+			while (food.y % snake.chunk_side_length != 0) {
+				food.y = GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
+			}
 		}
 
 
@@ -114,22 +150,15 @@ int main(void) {
 	return 0;
 }
 
-void addNode(LinkedList* linked_list) {
+void addSnakeChunk(LinkedList* snake) {
 	Node* new_node = malloc(sizeof(Node));
-	new_node->x = ((SCREENWIDTH / 2) - (linked_list->chunk_side_length / 2));
-	new_node->y = (SCREENHEIGHT / 2) - (40 / 2);
+	new_node->x = snake->last_node->x;
+	new_node->y = snake->last_node->y;
 	new_node->next = NULL;
-	
-	if (linked_list->head == NULL) {
-		linked_list->head = new_node;
-		linked_list->length++;
-		linked_list->last_node = new_node;
-		return;
-	}
 
-	linked_list->last_node->next = new_node;
-	linked_list->length++;
-	linked_list->last_node = new_node;
+	snake->last_node->next = new_node;
+	snake->length++;
+	snake->last_node = new_node;
 }
 
 void printLinkedList(LinkedList* linked_list) {
@@ -154,5 +183,4 @@ void drawSnake(LinkedList* snake) {
 		current_node = current_node->next;
 	}
 }
-
 

@@ -1,0 +1,6 @@
+1. The direction of the snake can be reversed. Make it so that it won't do that.
+2. Add a collision logic between the head and the walls. If the head hit em the player looses.
+3. Add a collision logic between the head and the body. When the head hits the body the player looses.
+4. Make it so that the food don't spawn where the snake head or body is.
+
+
