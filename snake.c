@@ -23,6 +23,8 @@ typedef struct LinkedList {
 
 void addSnakeChunk(LinkedList* snake);
 
+bool wouldReverse(LinkedList* snake, int new_speed_x, int new_speed_y);
+
 void freeLinkedList(LinkedList* linked_list);
 
 void printLinkedList(LinkedList* linked_list);
@@ -68,19 +70,19 @@ int main(void) {
 	int frame_count = 0;
 
 	while (!WindowShouldClose()) {
-		if (IsKeyPressed(KEY_RIGHT)) {
+		if (IsKeyPressed(KEY_RIGHT) && wouldReverse(&snake, snake.chunk_side_length, 0) != true) {
 			snake.speed_x = snake.chunk_side_length;
 			snake.speed_y = 0;
 		}
-		if (IsKeyPressed(KEY_UP)) {
+		if (IsKeyPressed(KEY_UP) && wouldReverse(&snake, 0, -(snake.chunk_side_length)) != true) {
 			snake.speed_x = 0;
 			snake.speed_y = -(snake.chunk_side_length);
 		}
-		if (IsKeyPressed(KEY_LEFT)) {
+		if (IsKeyPressed(KEY_LEFT) && wouldReverse(&snake, -(snake.chunk_side_length), 0) != true) {
 			snake.speed_x = -(snake.chunk_side_length);
 			snake.speed_y = 0;
 		}
-		if (IsKeyPressed(KEY_DOWN)) {
+		if (IsKeyPressed(KEY_DOWN) && wouldReverse(&snake, 0, snake.chunk_side_length) != true) {
 			snake.speed_x = 0;
 			snake.speed_y = snake.chunk_side_length;
 		}
@@ -159,6 +161,16 @@ void addSnakeChunk(LinkedList* snake) {
 	snake->last_node->next = new_node;
 	snake->length++;
 	snake->last_node = new_node;
+}
+
+bool wouldReverse(LinkedList* snake, int new_speed_x, int new_speed_y) {
+	if (snake->head->next == NULL) {
+		return false;
+	}
+
+	bool result = ((snake->head->x + new_speed_x) == snake->head->next->x) && ((snake->head->y + new_speed_y) == snake->head->next->y);
+
+	return result;
 }
 
 void printLinkedList(LinkedList* linked_list) {

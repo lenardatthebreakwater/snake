@@ -1,3 +1,8 @@
 libraylib.a
 raylib.h
 snake.exe
+Makefile.Android
+build.android/
+build_android.bat
+snake.apk
+snake.apk.idsig
