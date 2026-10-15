@@ -44,14 +44,17 @@ int main(void) {
 		.length = 0
 	};
 	
-	Node snake_head = {
+	Node* snake_head = malloc(sizeof(Node));
+
+	*snake_head = (Node){
 		.x = snake.chunk_side_length * 3,
 		.y = snake.chunk_side_length * 3,
 		.next = NULL
 	};
 
-	snake.head = &snake_head;
-	snake.last_node = &snake_head;
+	snake.head = snake_head;
+	snake.length = 1;
+	snake.last_node = snake_head;
 	
 	int x =  GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
 	while (x % snake.chunk_side_length != 0) {
@@ -88,8 +91,8 @@ int main(void) {
 		}
 		
 		Rectangle snake_head_rec = {
-			.x=(float)snake_head.x,
-			.y=(float)snake_head.y,
+			.x=(float)snake_head->x,
+			.y=(float)snake_head->y,
 			.width=(float)snake.chunk_side_length,
 			.height=(float)snake.chunk_side_length
 		};
@@ -114,6 +117,16 @@ int main(void) {
 			}
 		}
 
+		if (snake.head->x == 0 || snake.head->y == 0) {
+			snake.speed_x = 0;
+			snake.speed_y = 0;
+			freeLinkedList(&snake);
+			snake.length = 0;
+		}
+
+		if (snake.head->x == (SCREENWIDTH - snake.chunk_side_length) || snake.head->y == (SCREENHEIGHT - snake.chunk_side_length)) {
+			freeLinkedList(&snake);
+		}
 
 		frame_count++;
 		
@@ -148,6 +161,7 @@ int main(void) {
 		EndDrawing();
 	}
 
+	freeLinkedList(&snake);
 	CloseWindow();
 	return 0;
 }
@@ -193,6 +207,17 @@ void drawSnake(LinkedList* snake) {
 	while (current_node != NULL) {
 		DrawRectangle(current_node->x, current_node->y, snake->chunk_side_length, snake->chunk_side_length, RAYWHITE);
 		current_node = current_node->next;
+	}
+}
+
+void freeLinkedList(LinkedList* linked_list) {
+	Node* current_node = linked_list->head;
+	Node* temp = NULL;
+
+	while (current_node != NULL) {
+		temp = current_node->next;
+		free(current_node);
+		current_node = temp;
 	}
 }
 
