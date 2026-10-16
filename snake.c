@@ -35,6 +35,8 @@ int main(void) {
 	InitWindow(SCREENWIDTH, SCREENHEIGHT, "Snake");
 	SetTargetFPS(60);
 	
+	bool game_over = false;
+
 	LinkedList snake = {
 		.head = NULL,
 		.last_node = NULL,
@@ -73,91 +75,129 @@ int main(void) {
 	int frame_count = 0;
 
 	while (!WindowShouldClose()) {
-		if (IsKeyPressed(KEY_RIGHT) && wouldReverse(&snake, snake.chunk_side_length, 0) != true) {
-			snake.speed_x = snake.chunk_side_length;
-			snake.speed_y = 0;
-		}
-		if (IsKeyPressed(KEY_UP) && wouldReverse(&snake, 0, -(snake.chunk_side_length)) != true) {
-			snake.speed_x = 0;
-			snake.speed_y = -(snake.chunk_side_length);
-		}
-		if (IsKeyPressed(KEY_LEFT) && wouldReverse(&snake, -(snake.chunk_side_length), 0) != true) {
-			snake.speed_x = -(snake.chunk_side_length);
-			snake.speed_y = 0;
-		}
-		if (IsKeyPressed(KEY_DOWN) && wouldReverse(&snake, 0, snake.chunk_side_length) != true) {
-			snake.speed_x = 0;
-			snake.speed_y = snake.chunk_side_length;
-		}
-		
-		Rectangle snake_head_rec = {
-			.x=(float)snake_head->x,
-			.y=(float)snake_head->y,
-			.width=(float)snake.chunk_side_length,
-			.height=(float)snake.chunk_side_length
-		};
-
-		Rectangle food_rec = {
-			.x=(float)food.x,
-			.y=(float)food.y,
-			.width=(float)snake.chunk_side_length,
-			.height=(float)snake.chunk_side_length
-		};
-
-		if (CheckCollisionRecs(snake_head_rec, food_rec)) {
-			addSnakeChunk(&snake);
-
-			food.x =  GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
-			while (food.x % snake.chunk_side_length != 0) {
-				food.x = GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
+		if (game_over != true) {
+			if (IsKeyPressed(KEY_RIGHT) && wouldReverse(&snake, snake.chunk_side_length, 0) != true) {
+				snake.speed_x = snake.chunk_side_length;
+				snake.speed_y = 0;
 			}
-			food.y =  GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
-			while (food.y % snake.chunk_side_length != 0) {
-				food.y = GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
+			if (IsKeyPressed(KEY_UP) && wouldReverse(&snake, 0, -(snake.chunk_side_length)) != true) {
+				snake.speed_x = 0;
+				snake.speed_y = -(snake.chunk_side_length);
+			}
+			if (IsKeyPressed(KEY_LEFT) && wouldReverse(&snake, -(snake.chunk_side_length), 0) != true) {
+				snake.speed_x = -(snake.chunk_side_length);
+				snake.speed_y = 0;
+			}
+			if (IsKeyPressed(KEY_DOWN) && wouldReverse(&snake, 0, snake.chunk_side_length) != true) {
+				snake.speed_x = 0;
+				snake.speed_y = snake.chunk_side_length;
+			}
+			
+			Rectangle snake_head_rec = {
+				.x=(float)snake_head->x,
+				.y=(float)snake_head->y,
+				.width=(float)snake.chunk_side_length,
+				.height=(float)snake.chunk_side_length
+			};
+
+			Rectangle food_rec = {
+				.x=(float)food.x,
+				.y=(float)food.y,
+				.width=(float)snake.chunk_side_length,
+				.height=(float)snake.chunk_side_length
+			};
+
+			if (CheckCollisionRecs(snake_head_rec, food_rec)) {
+				addSnakeChunk(&snake);
+
+				food.x =  GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
+				while (food.x % snake.chunk_side_length != 0) {
+					food.x = GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
+				}
+				food.y =  GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
+				while (food.y % snake.chunk_side_length != 0) {
+					food.y = GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
+				}
+			}
+
+			if (snake.head->x < 0 || snake.head->y < 0) {
+				game_over = true;
+			}
+
+			if (snake.head->x > (SCREENWIDTH - snake.chunk_side_length) || snake.head->y > (SCREENHEIGHT - snake.chunk_side_length)) {
+				game_over = true;
+			}
+
+			frame_count++;
+			
+			if (frame_count == 10) {
+				frame_count = 0;
+				
+				int prev_x = snake.head->x;
+				int prev_y = snake.head->y;
+
+				snake.head->x += snake.speed_x;
+				snake.head->y += snake.speed_y;
+				
+				Node* current_node = snake.head->next;
+				while (current_node != NULL) {
+					int temp_x = current_node->x;
+					int temp_y = current_node->y;
+
+					current_node->x = prev_x;
+					current_node->y = prev_y;
+
+					prev_x = temp_x;
+					prev_y = temp_y;
+
+					current_node = current_node->next;
+				}
 			}
 		}
 
-		if (snake.head->x == 0 || snake.head->y == 0) {
-			snake.speed_x = 0;
-			snake.speed_y = 0;
-			freeLinkedList(&snake);
-			snake.length = 0;
-		}
-
-		if (snake.head->x == (SCREENWIDTH - snake.chunk_side_length) || snake.head->y == (SCREENHEIGHT - snake.chunk_side_length)) {
-			freeLinkedList(&snake);
-		}
-
-		frame_count++;
-		
-		if (frame_count == 10) {
+		if (IsKeyPressed(KEY_ENTER) && game_over == true) {
 			frame_count = 0;
-			
-			int prev_x = snake.head->x;
-			int prev_y = snake.head->y;
 
-			snake.head->x += snake.speed_x;
-			snake.head->y += snake.speed_y;
-			
-			Node* current_node = snake.head->next;
-			while (current_node != NULL) {
-				int temp_x = current_node->x;
-				int temp_y = current_node->y;
+			freeLinkedList(&snake);
+			snake.speed_x = 0;
+			snake.speed_y = 0;
 
-				current_node->x = prev_x;
-				current_node->y = prev_y;
+			snake_head = malloc(sizeof(Node));
 
-				prev_x = temp_x;
-				prev_y = temp_y;
+			*snake_head = (Node){
+				.x = snake.chunk_side_length * 3,
+				.y = snake.chunk_side_length * 3,
+				.next = NULL
+			};
 
-				current_node = current_node->next;
+			snake.head = snake_head;
+			snake.length = 1;
+			snake.last_node = snake_head;
+
+			int x =  GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
+			while (x % snake.chunk_side_length != 0) {
+				x = GetRandomValue(0, (SCREENWIDTH - snake.chunk_side_length));
 			}
+			int y =  GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
+			while (y % snake.chunk_side_length != 0) {
+				y = GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
+			}
+
+			food.x = x;
+			food.y = y;
+
+			game_over = false;
 		}
 
 		BeginDrawing();
 		ClearBackground(BLACK);
-		DrawRectangle(food.x, food.y, snake.chunk_side_length, snake.chunk_side_length, RAYWHITE);
-		drawSnake(&snake);
+		if (game_over == true) {
+			DrawText("Game Over - Press Enter to restart the game\0", SCREENWIDTH / 2 - MeasureText("Game Over - Press Enter to restart the game\0", 36) / 2, SCREENHEIGHT / 2 - 36, 36, RAYWHITE);
+		}
+		if (game_over != true) {
+			DrawRectangle(food.x, food.y, snake.chunk_side_length, snake.chunk_side_length, RAYWHITE);
+			drawSnake(&snake);
+		}
 		EndDrawing();
 	}
 
@@ -219,5 +259,8 @@ void freeLinkedList(LinkedList* linked_list) {
 		free(current_node);
 		current_node = temp;
 	}
-}
 
+	linked_list->head = NULL;
+	linked_list->last_node = NULL;
+	linked_list->length = 0;
+}
