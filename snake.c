@@ -36,6 +36,8 @@ int main(void) {
 	SetTargetFPS(60);
 	
 	bool game_over = false;
+	
+	int frames_per_step = 10;
 
 	LinkedList snake = {
 		.head = NULL,
@@ -118,6 +120,9 @@ int main(void) {
 				while (food.y % snake.chunk_side_length != 0) {
 					food.y = GetRandomValue(0, (SCREENHEIGHT - snake.chunk_side_length));
 				}
+				//if (frames_per_step != 1) {
+				//	frames_per_step--;
+				//}
 			}
 
 			if (snake.head->x < 0 || snake.head->y < 0) {
@@ -126,11 +131,11 @@ int main(void) {
 
 			if (snake.head->x > (SCREENWIDTH - snake.chunk_side_length) || snake.head->y > (SCREENHEIGHT - snake.chunk_side_length)) {
 				game_over = true;
-			}
+			}			
 
 			frame_count++;
 			
-			if (frame_count == 10) {
+			if (frame_count == frames_per_step) {
 				frame_count = 0;
 				
 				int prev_x = snake.head->x;
@@ -152,10 +157,19 @@ int main(void) {
 
 					current_node = current_node->next;
 				}
+
+				Node* snake_chunk = snake.head->next;
+				while (snake_chunk != NULL) {
+					if ((snake.head->x == snake_chunk->x) && (snake.head->y  == snake_chunk->y)) {
+						game_over = true;
+					}
+					snake_chunk = snake_chunk->next;
+				}
 			}
 		}
 
 		if (IsKeyPressed(KEY_ENTER) && game_over == true) {
+			//frames_per_step = 10;
 			frame_count = 0;
 
 			freeLinkedList(&snake);
